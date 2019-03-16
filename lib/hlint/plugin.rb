@@ -39,6 +39,8 @@ module Danger
                .map { |lint_result| JSON.parse(lint_result).flatten }
                .flatten
 
+      puts issues
+
       self.suggestions = issues.select { |issue| issue['severity'] == 'Suggestion' }
       self.warnings = issues.select { |issue| issue['severity'] == 'Warning' }
       self.errors = issues.select { |issue| issue['severity'] == 'Error' }
@@ -89,7 +91,9 @@ module Danger
         prompt = r['severity'] == 'Error' ? 'Error description' : prompt
 
         message = "Found #{r['hint']}\n\n```haskell\n#{r['from']}\n``` \n\n #{prompt} \n\n ```haskell\n#{r['to']}\n```"
+        puts message
         send(method, message, file: filename, line: r['startLine'])
+        puts "sent!"
       end
     end
 
