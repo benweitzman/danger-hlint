@@ -89,10 +89,15 @@ module Danger
       results.each do |r|
         filename = r['file'].gsub(dir, '')
 
-        prompt = r['severity'] == 'Suggestion' || r['severity'] == 'Warning' ? 'Why Not' : ''
-        prompt = r['severity'] == 'Error' ? 'Error description' : prompt
+        message = "Found #{r['hint']}\n\n```haskell\n#{r['from']}\n```"
 
-        message = "Found #{r['hint']}\n\n```haskell\n#{r['from']}\n``` \n\n #{prompt} \n\n ```haskell\n#{r['to']}\n```"
+        if !r['to'].nil?
+          prompt = r['severity'] == 'Suggestion' || r['severity'] == 'Warning' ? 'Why Not' : ''
+          prompt = r['severity'] == 'Error' ? 'Error description' : prompt
+
+          message <<=  "\n\n #{prompt} \n\n ```haskell\n#{r['to']}\n```"
+        end
+
         puts message
         send(method, message, file: filename, line: r['startLine'])
         puts "sent!"
