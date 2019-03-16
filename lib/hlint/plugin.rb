@@ -36,7 +36,7 @@ module Danger
 
       issues = files
                .map { |file| Shellwords.escape(file) }
-               .map { |file| `hlint lint #{file} #{to_hlint_options(final_options)} 2>/dev/null` }
+               .map { |file| `hlint #{file} #{to_hlint_options(final_options)} 2>/dev/null` }
                .reject { |s| s == '' }
                .map { |lint_result| JSON.parse(lint_result).flatten }
                .flatten
