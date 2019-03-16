@@ -32,16 +32,12 @@ module Danger
     def lint(files, inline_mode = false, options = {})
       final_options = options.merge(json: true)
 
-      puts "hello from danger-hlint!"
-
       issues = files
                .map { |file| Shellwords.escape(file) }
                .map { |file| `hlint #{file} #{to_hlint_options(final_options)} 2>/dev/null` }
                .reject { |s| s == '' }
                .map { |lint_result| JSON.parse(lint_result).flatten }
                .flatten
-
-      puts issues
 
       self.suggestions = issues.select { |issue| issue['severity'] == 'Suggestion' }
       self.warnings = issues.select { |issue| issue['severity'] == 'Warning' }
@@ -98,9 +94,7 @@ module Danger
           message <<=  "\n\n #{prompt} \n\n ```haskell\n#{r['to']}\n```"
         end
 
-        puts message
         send(method, message, file: filename, line: r['startLine'])
-        puts "sent!"
       end
     end
 
