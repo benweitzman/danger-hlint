@@ -32,6 +32,8 @@ module Danger
     def lint(files, inline_mode = false, options = {})
       final_options = options.merge(json: true)
 
+      puts "hello from danger-hlint!"
+
       issues = files
                .map { |file| Shellwords.escape(file) }
                .map { |file| `hlint lint #{file} #{to_hlint_options(final_options)} 2>/dev/null` }
