@@ -39,13 +39,8 @@ module Danger
                .map { |file| withResult.new(file, `hlint #{file} #{to_hlint_options(final_options)} 2>/dev/null`) }
                .reject { |s| s.result == '' }
                .map { |lint_result| withResult.new(lint_result.file, JSON.parse(lint_result.result).flatten) }
-               .map { |result| result.result }
-               .flatten
-
-      # short_commits = git.commits.map { |commit| commit.to_s[0,8] }
-      # commit_search = "'(#{short_commits.join "|"})'"
-      # changed_lines = `git annotate #{file} | grep -En #{commit_search} | grep -o -E '^[0-9]+'`.split.map { |s| s.to_i }
-     
+               .map { |result| filter_issues_to_changed_lines(result.file, result.result) }
+               .flatten     
 
       self.suggestions = issues.select { |issue| issue['severity'] == 'Suggestion' }
       self.warnings = issues.select { |issue| issue['severity'] == 'Warning' }
@@ -122,6 +117,18 @@ module Danger
         reduce('') { |args, option| "#{args} #{option[0]} #{option[1]}" }.
         # strip leading spaces
         strip
+    end
+
+    def filter_issues_to_changed_lines(file, issues)
+      short_commits = git.commits.map { |commit| commit.to_s[0,8] }
+      commit_search = "'(#{short_commits.join "|"})'"
+      changed_lines = `git annotate #{file} | grep -En #{commit_search} | grep -o -E '^[0-9]+'`.split.map { |s| s.to_i }
+
+      issues.filter |issue| do
+        changed_lines.any? |line| do
+          line >= issue['startLine'] && line <= issue['endLine']
+        end
+      end
     end
 
     private :send_inline_comment, :to_hlint_options, :markdown_issues
