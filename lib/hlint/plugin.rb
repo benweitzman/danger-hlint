@@ -32,12 +32,20 @@ module Danger
     def lint(files, inline_mode = false, options = {})
       final_options = options.merge(json: true)
 
+      WithResult = Struct.new(:file, :result)
+      
       issues = files
                .map { |file| Shellwords.escape(file) }
-               .map { |file| `hlint #{file} #{to_hlint_options(final_options)} 2>/dev/null` }
-               .reject { |s| s == '' }
-               .map { |lint_result| JSON.parse(lint_result).flatten }
+               .map { |file| WithResult(file, `hlint #{file} #{to_hlint_options(final_options)} 2>/dev/null`) }
+               .reject { |s| s.result == '' }
+               .map { |lint_result| WithResult(lint_result.file, JSON.parse(lint_result.result).flatten) }
+               .map { |result| result.result }
                .flatten
+
+      # short_commits = git.commits.map { |commit| commit.to_s[0,8] }
+      # commit_search = "'(#{short_commits.join "|"})'"
+      # changed_lines = `git annotate #{file} | grep -En #{commit_search} | grep -o -E '^[0-9]+'`.split.map { |s| s.to_i }
+     
 
       self.suggestions = issues.select { |issue| issue['severity'] == 'Suggestion' }
       self.warnings = issues.select { |issue| issue['severity'] == 'Warning' }
