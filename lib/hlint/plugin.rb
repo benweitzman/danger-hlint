@@ -124,7 +124,7 @@ module Danger
       commit_search = "'(#{short_commits.join "|"})'"
       changed_lines = `git annotate #{file} | grep -En #{commit_search} | grep -o -E '^[0-9]+'`.split.map { |s| s.to_i }
 
-      issues.filter do |issue| 
+      issues.select do |issue| 
         changed_lines.any? do |line|
           line >= issue['startLine'] && line <= issue['endLine']
         end
