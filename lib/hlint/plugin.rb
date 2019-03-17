@@ -32,13 +32,13 @@ module Danger
     def lint(files, inline_mode = false, options = {})
       final_options = options.merge(json: true)
 
-      WithResult = Struct.new(:file, :result)
+      withResult = Struct.new(:file, :result)
       
       issues = files
                .map { |file| Shellwords.escape(file) }
-               .map { |file| WithResult(file, `hlint #{file} #{to_hlint_options(final_options)} 2>/dev/null`) }
+               .map { |file| withResult(file, `hlint #{file} #{to_hlint_options(final_options)} 2>/dev/null`) }
                .reject { |s| s.result == '' }
-               .map { |lint_result| WithResult(lint_result.file, JSON.parse(lint_result.result).flatten) }
+               .map { |lint_result| withResult(lint_result.file, JSON.parse(lint_result.result).flatten) }
                .map { |result| result.result }
                .flatten
 
